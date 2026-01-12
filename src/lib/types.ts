@@ -45,4 +45,5 @@ export interface UserState {
   watched: Media[];
   githubToken?: string;
   gistId?: string;
+  vidAngelEnabled?: boolean;
 }

@@ -7,11 +7,12 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { clsx } from 'clsx';
 
 export default function SettingsPage() {
-  const { apiKey, setApiKey, githubToken, setGithubToken, gistId, setGistId, syncFromGist, isSyncing } = useAppContext();
+  const { apiKey, setApiKey, githubToken, setGithubToken, gistId, setGistId, syncFromGist, isSyncing, vidAngelEnabled, setVidAngelEnabled } = useAppContext();
   
   const [tempApiKey, setTempApiKey] = useState('');
   const [tempGithubToken, setTempGithubToken] = useState('');
   const [tempGistId, setTempGistId] = useState('');
+  const [tempVidAngelEnabled, setTempVidAngelEnabled] = useState(false);
   
   const [saved, setSaved] = useState(false);
 
@@ -19,12 +20,14 @@ export default function SettingsPage() {
     setTempApiKey(apiKey);
     setTempGithubToken(githubToken || '');
     setTempGistId(gistId || '');
-  }, [apiKey, githubToken, gistId]);
+    setTempVidAngelEnabled(vidAngelEnabled || false);
+  }, [apiKey, githubToken, gistId, vidAngelEnabled]);
 
   const handleSave = () => {
     setApiKey(tempApiKey);
     setGithubToken(tempGithubToken);
     setGistId(tempGistId);
+    setVidAngelEnabled(tempVidAngelEnabled);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     
@@ -72,6 +75,33 @@ export default function SettingsPage() {
             placeholder="Enter your TMDB API key..."
             className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600"
           />
+        </section>
+
+        <section className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-indigo-600 rounded-full p-1">
+              <span className="text-white font-bold text-xs px-1">VA</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Content Filters</h2>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="pr-4">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white">VidAngel Integration</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Show availability for movies rated R and TV shows rated TV-MA.
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={!!(isSyncing ? vidAngelEnabled : tempVidAngelEnabled)} // Use temp state if I add one, but for now I'll just use context direct or add temp state
+                onChange={(e) => setTempVidAngelEnabled(e.target.checked)}
+                className="sr-only peer" 
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
         </section>
 
         <section className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800">

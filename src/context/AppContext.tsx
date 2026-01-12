@@ -9,6 +9,7 @@ interface AppContextType extends UserState {
   setApiKey: (key: string) => void;
   setGithubToken: (token: string) => void;
   setGistId: (id: string) => void;
+  setVidAngelEnabled: (enabled: boolean) => void;
   toggleWatchlist: (media: Media) => void;
   toggleWatched: (media: Media) => void;
   syncFromGist: () => Promise<void>;
@@ -87,6 +88,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveState({ gistId });
   };
 
+  const setVidAngelEnabled = (vidAngelEnabled: boolean) => {
+    setState((prev) => ({ ...prev, vidAngelEnabled }));
+    saveState({ vidAngelEnabled });
+  };
+
   const pushToGist = async (watchlist: Media[], watched: Media[]) => {
     if (!state.githubToken || !state.gistId) return;
     try {
@@ -115,6 +121,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setApiKey,
         setGithubToken,
         setGistId,
+        setVidAngelEnabled,
         toggleWatchlist,
         toggleWatched,
         syncFromGist,

@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { Media, WatchProvider } from '@/lib/types';
 import { getImageUrl, getWatchProviders, getContentRating } from '@/lib/tmdb';
+import { checkVidAngelAvailability } from '@/lib/vidangel';
 import { useAppContext } from '@/context/AppContext';
-import { Plus, Check, Trash2, Play } from 'lucide-react';
+import { Plus, Check, Trash2, Play, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 
@@ -14,29 +15,46 @@ interface MediaCardProps {
 }
 
 export const MediaCard: React.FC<MediaCardProps> = ({ media, showActions = true }) => {
-  const { apiKey, watchlist, watched, toggleWatchlist, toggleWatched } = useAppContext();
+  const { apiKey, watchlist, watched, toggleWatchlist, toggleWatched, vidAngelEnabled } = useAppContext();
   
   const [rating, setRating] = useState<string | null>(null);
   const [providers, setProviders] = useState<WatchProvider[]>([]);
+  const [vidAngelAvailable, setVidAngelAvailable] = useState(false);
   const [loadingExtras, setLoadingExtras] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
     if (apiKey) {
+      // Create a promise for VidAngel check that we can conditionally execute
+      const checkVA = async (currentRating: string | null) => {
+        if (!vidAngelEnabled || !currentRating) return false;
+        
+        const isMovie = media.media_type === 'movie';
+        const isTV = media.media_type === 'tv';
+        const title = media.title || media.name;
+
+        if ((isMovie && currentRating === 'R') || (isTV && currentRating === 'TV-MA')) {
+           return checkVidAngelAvailability(title || '');
+        }
+        return false;
+      };
+
       Promise.all([
         getContentRating(media.id, media.media_type, apiKey),
         getWatchProviders(media.id, media.media_type, apiKey)
-      ]).then(([ratingData, providerData]) => {
+      ]).then(async ([ratingData, providerData]) => {
         if (isMounted) {
           setRating(ratingData);
+          
+          // Check VidAngel availability based on the fetched rating
+          const vaResult = await checkVA(ratingData);
+          setVidAngelAvailable(vaResult);
+
           const usProviders = providerData.results?.['US'];
-          // Combine flatrate, rent, and buy, prioritize flatrate
           const allProviders = [
             ...(usProviders?.flatrate || []),
-            // Optional: Include rent/buy if you want, but flatrate is usually most relevant for "streaming"
-          ].slice(0, 3); // Limit to top 3 to avoid clutter
+          ].slice(0, 3); 
           
-          // Deduplicate by provider_id just in case
           const uniqueProviders = allProviders.filter((v, i, a) => a.findIndex(t => t.provider_id === v.provider_id) === i);
           
           setProviders(uniqueProviders);
@@ -47,7 +65,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ media, showActions = true 
       });
     }
     return () => { isMounted = false; };
-  }, [media.id, media.media_type, apiKey]);
+  }, [media.id, media.media_type, apiKey, vidAngelEnabled, media.title, media.name]);
 
   const inWatchlist = watchlist.some((m) => m.id === media.id && m.media_type === media.media_type);
   const inWatched = watched.some((m) => m.id === media.id && m.media_type === media.media_type);
@@ -84,6 +102,14 @@ export const MediaCard: React.FC<MediaCardProps> = ({ media, showActions = true 
             </div>
           )}
         </div>
+
+        {vidAngelAvailable && (
+           <div className="absolute top-2 left-2 z-10">
+             <div className="bg-indigo-600 text-white p-1 rounded-full shadow-md border border-white/20" title="Available on VidAngel">
+               <ShieldCheck size={14} strokeWidth={2.5} />
+             </div>
+           </div>
+        )}
 
         {rating && (
           <div className="absolute bottom-2 left-2">

@@ -8,6 +8,7 @@ const defaultState: UserState = {
   watched: [],
   githubToken: '',
   gistId: '',
+  vidAngelEnabled: false,
 };
 
 export const loadState = (): UserState => {
