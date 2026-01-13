@@ -30,7 +30,7 @@ export default function DetailsView() {
       const checkVA = async (currentRating: string | null, title: string) => {
         if (!vidAngelEnabled || !currentRating) return false;
         if ((type === 'movie' && currentRating === 'R') || (type === 'tv' && currentRating === 'TV-MA')) {
-           return checkVidAngelAvailability(title);
+           return checkVidAngelAvailability(title, parseInt(id!), type);
         }
         return false;
       };
