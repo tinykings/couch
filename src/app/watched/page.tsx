@@ -193,14 +193,11 @@ export default function WatchedPage() {
                 <h2 className="text-lg font-bold uppercase tracking-tight text-gray-900 dark:text-white">Upcoming Episodes</h2>
               </div>
               
-              <div className="flex overflow-x-auto pb-4 gap-4 -mx-4 px-4 snap-x hide-scrollbar">
-                {upcomingEpisodes.map((item) => (
-                  <div key={item.id} className="w-[160px] flex-shrink-0 snap-center">
-                    <MediaCard media={item} showActions={false} />
-                  </div>
-                ))}
-              </div>
-            </section>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                          {upcomingEpisodes.map((item) => (
+                            <MediaCard key={item.id} media={item} showActions={false} />
+                          ))}
+                        </div>            </section>
           )}
 
           {watched.length === 0 ? (
